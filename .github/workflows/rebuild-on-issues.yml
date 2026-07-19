@@ -1,0 +1,28 @@
+name: Rebuild site on issue change
+
+# Authoring happens in GitHub Issues, so content changes don't push commits.
+# This pings Vercel's deploy hook whenever a Publish-labelled issue is touched,
+# so adding the `Publish` label makes the post go live within ~a minute.
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, closed, reopened]
+  workflow_dispatch:
+
+# Avoid stacking redundant deploys from rapid edits.
+concurrency:
+  group: vercel-deploy
+  cancel-in-progress: true
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "VERCEL_DEPLOY_HOOK secret not set yet; skipping (see issue #3)."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK" && echo "Deploy hook triggered."
