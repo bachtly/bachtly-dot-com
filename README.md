@@ -225,7 +225,9 @@ If you are intending to use the [Clouflare adapter](https://docs.astro.build/en/
 
 ## Acknowledgment
 
-This theme was inspired by [Hexo Theme Cactus](https://github.com/probberechts/hexo-theme-cactus)
+This site is built on the [Astro Cactus](https://github.com/chrismwilliams/astro-cactus) theme by Chris Williams (MIT licensed; see [LICENSE](./LICENSE)).
+
+The theme itself was inspired by [Hexo Theme Cactus](https://github.com/probberechts/hexo-theme-cactus)
 
 ## License
 
