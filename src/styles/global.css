@@ -128,22 +128,6 @@
 	}
 }
 
-/* Code blocks want a longer line than body text does, so let them break out
-   of the prose measure into the left gutter once there's room for it. */
-@media (min-width: 1024px) {
-	.prose .expressive-code {
-		margin-inline-start: -3rem;
-		width: calc(100% + 3rem);
-	}
-}
-
-@media (min-width: 1280px) {
-	.prose .expressive-code {
-		margin-inline-start: -5rem;
-		width: calc(100% + 5rem);
-	}
-}
-
 @utility prose {
 	--tw-prose-body: var(--color-global-text);
 	--tw-prose-bold: var(--color-global-text);

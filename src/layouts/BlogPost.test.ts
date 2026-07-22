@@ -35,10 +35,8 @@ describe("BlogPost layout", () => {
 		}
 	});
 
-	it("lets code blocks break out of the prose measure into the left gutter", () => {
-		expect(globalCssSource).toContain(".prose .expressive-code");
-		expect(globalCssSource).toContain("margin-inline-start: -3rem;");
-		expect(globalCssSource).toContain("margin-inline-start: -5rem;");
+	it("keeps code blocks aligned with the prose measure (no left-gutter breakout)", () => {
+		expect(globalCssSource).not.toContain(".prose .expressive-code");
 	});
 
 	it("still guards TOC rendering for posts with no headings", () => {
