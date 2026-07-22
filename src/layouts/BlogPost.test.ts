@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const blogPostSource = readFileSync(path.join(dirname, "BlogPost.astro"), "utf-8");
 const globalCssSource = readFileSync(path.join(dirname, "..", "styles", "global.css"), "utf-8");
+const baseLayoutSource = readFileSync(path.join(dirname, "Base.astro"), "utf-8");
 
 // Side-rail treatment that put the TOC beside the article at `lg`, in a flex
 // row with the TOC and prose column split apart. The article always stacks
@@ -37,12 +38,13 @@ describe("BlogPost layout", () => {
 		expect(globalCssSource).not.toContain(".prose .expressive-code");
 	});
 
-	it("widens the prose column past Tailwind Typography's 65ch default", () => {
-		// With no rail taking a bite out of it, the article has the whole
-		// container to work with, but `.prose` still caps itself at 65ch
-		// (~546px in this mono font at prose-sm's 14px). 72ch is wider while
-		// staying inside the conventional 45-75 character line-length range.
-		expect(blogPostSource).toContain("max-w-[72ch]");
+	it("lets the prose column fill the page container", () => {
+		// `.prose` caps itself at 65ch (~546px in this mono font at prose-sm's
+		// 14px), narrower than the container. With no rail beside it, the
+		// article takes the container's full width instead; the page's own
+		// `max-w-3xl` on body is what bounds the measure.
+		expect(blogPostSource).toContain("max-w-none");
+		expect(baseLayoutSource).toContain("max-w-3xl");
 	});
 
 	it("still guards TOC rendering for posts with no headings", () => {
