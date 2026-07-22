@@ -9,12 +9,12 @@ function removeDupsAndLowerCase(array: string[]) {
 
 const REPO = process.env.BLOG_REPO ?? "bachtly/bachtly-dot-com";
 
-// Content Layer loader: fetches `Publish`-labelled GitHub Issues and emits the
-// ones for `tier` into this collection. The issue->entry mapping is the pure,
-// unit-tested `issueToEntry`; this wrapper only does fetch + markdown rendering.
-function githubIssuesLoader(tier: "post" | "note"): Loader {
+// Content Layer loader: fetches every `Publish`-labelled GitHub Issue and emits
+// it into this collection. The issue->entry mapping is the pure, unit-tested
+// `issueToEntry`; this wrapper only does fetch + markdown rendering.
+function githubIssuesLoader(): Loader {
 	return {
-		name: `github-issues-${tier}`,
+		name: "github-issues",
 		async load({ store, renderMarkdown, parseData, logger }) {
 			store.clear();
 			const headers: Record<string, string> = {
@@ -30,9 +30,7 @@ function githubIssuesLoader(tier: "post" | "note"): Loader {
 				{ headers },
 			);
 			if (!res.ok) {
-				logger.warn(
-					`GitHub issues fetch failed (${res.status}); ${tier} collection left empty`,
-				);
+				logger.warn(`GitHub issues fetch failed (${res.status}); collection left empty`);
 				return;
 			}
 
@@ -43,12 +41,12 @@ function githubIssuesLoader(tier: "post" | "note"): Loader {
 			for (const issue of issues) {
 				if (issue.pull_request) continue; // /issues also returns PRs
 				const entry = issueToEntry(issue);
-				if (!entry || entry.tier !== tier) continue;
+				if (!entry) continue;
 				const data = await parseData({
 					id: entry.id,
 					data: {
 						...entry.data,
-						// `post` requires a description; fall back to the title.
+						// fall back to the title so every entry has a description.
 						description: entry.data.description ?? entry.data.title,
 					},
 				});
@@ -56,7 +54,7 @@ function githubIssuesLoader(tier: "post" | "note"): Loader {
 				store.set({ id: entry.id, data, rendered });
 				count++;
 			}
-			logger.info(`Loaded ${count} ${tier}(s) from GitHub Issues (${REPO})`);
+			logger.info(`Loaded ${count} post(s) from GitHub Issues (${REPO})`);
 		},
 	};
 }
@@ -67,11 +65,15 @@ const baseSchema = z.object({
 	title: titleSchema,
 });
 
+// Merged schema for the single, unified article type: every field that used
+// to be `note`-only-optional (i.e. not present on the `note` schema at all,
+// or optional there) stays optional/defaulted here, so a lightweight
+// note-like issue is just as easy to publish as a fully-dressed post.
 const post = defineCollection({
-	loader: githubIssuesLoader("post"),
+	loader: githubIssuesLoader(),
 	schema: ({ image }) =>
 		baseSchema.extend({
-			description: z.string(),
+			description: z.string().optional(),
 			coverImage: z
 				.object({
 					alt: z.string(),
@@ -93,17 +95,6 @@ const post = defineCollection({
 		}),
 });
 
-const note = defineCollection({
-	loader: githubIssuesLoader("note"),
-	schema: baseSchema.extend({
-		description: z.string().optional(),
-		publishDate: z
-			.string()
-			.or(z.date())
-			.transform((val) => new Date(val)),
-	}),
-});
-
 const tag = defineCollection({
 	loader: glob({ base: "./src/content/tag", pattern: "**/*.{md,mdx}" }),
 	schema: z.object({
@@ -112,4 +103,4 @@ const tag = defineCollection({
 	}),
 });
 
-export const collections = { post, note, tag };
+export const collections = { post, tag };
