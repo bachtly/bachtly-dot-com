@@ -7,19 +7,38 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const blogPostSource = readFileSync(path.join(dirname, "BlogPost.astro"), "utf-8");
 const globalCssSource = readFileSync(path.join(dirname, "..", "styles", "global.css"), "utf-8");
 
-// Old layout that put the TOC beside the article as a wide-screen side
-// rail: a flex row at `lg` with the TOC and prose column split apart.
-const OLD_ROW_LAYOUT_CLASSES = ["lg:flex-row", "lg:items-start", "lg:justify-between"];
+// The TOC sits beside the article as a wide-screen side rail again. What
+// changed is where the rail's width comes from: the row now breaks out of
+// the page's `max-w-3xl` container to the right, so the rail hangs in the
+// empty gutter instead of being subtracted from the prose column.
+const ROW_LAYOUT_CLASSES = ["lg:flex-row", "lg:items-start", "lg:justify-between"];
+
+// Right-gutter breakout, sized so it can never exceed the gutter it hangs
+// in: at lg (1024px viewport) the gutter is (1024 - 768) / 2 = 128px and the
+// breakout is 96px; at xl (1280px) the gutter is 256px and it is 224px.
+const BREAKOUT_CLASSES = ["lg:-me-24", "xl:-me-56"];
 
 describe("BlogPost layout", () => {
-	it("no longer lays the TOC out beside the article at lg (no flex-row sidebar)", () => {
-		for (const cls of OLD_ROW_LAYOUT_CLASSES) {
-			expect(blogPostSource).not.toContain(cls);
+	it("lays the TOC out beside the article at lg", () => {
+		for (const cls of ROW_LAYOUT_CLASSES) {
+			expect(blogPostSource).toContain(cls);
 		}
 	});
 
-	it("keeps the TOC and article stacked vertically", () => {
+	it("keeps the TOC and article stacked vertically below lg", () => {
 		expect(blogPostSource).toContain("flex flex-col");
+	});
+
+	it("hangs the rail in the page's right gutter rather than in the prose column", () => {
+		for (const cls of BREAKOUT_CLASSES) {
+			expect(blogPostSource).toContain(cls);
+		}
+	});
+
+	it("lets code blocks break out of the prose measure into the left gutter", () => {
+		expect(globalCssSource).toContain(".prose .expressive-code");
+		expect(globalCssSource).toContain("margin-inline-start: -3rem;");
+		expect(globalCssSource).toContain("margin-inline-start: -5rem;");
 	});
 
 	it("still guards TOC rendering for posts with no headings", () => {

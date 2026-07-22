@@ -6,23 +6,33 @@ import { describe, expect, it } from "vitest";
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const tocSource = readFileSync(path.join(dirname, "TOC.astro"), "utf-8");
 
-// Old sidebar treatment that turned the TOC into a sticky rail floating
-// beside the article content at the `lg` breakpoint. Dropped so the TOC
-// always renders above the article body instead of eating horizontal
-// width next to it.
-const OLD_SIDEBAR_CLASSES = ["lg:sticky", "lg:order-2", "lg:-me-32", "lg:basis-64"];
+// The sticky side rail is back, but it no longer pays for itself out of the
+// article's width: `lg:-me-32` (which clawed the rail's width back out of the
+// prose column) is gone, replaced by a negative margin on the row in
+// BlogPost.astro that hangs the rail in the page's own right gutter instead.
+const SIDEBAR_CLASSES = ["lg:sticky", "lg:order-2", "lg:basis-64"];
 
 describe("TOC", () => {
-	it("no longer applies the sticky sidebar treatment at lg", () => {
-		for (const cls of OLD_SIDEBAR_CLASSES) {
-			expect(tocSource).not.toContain(cls);
+	it("renders as a sticky side rail at lg", () => {
+		for (const cls of SIDEBAR_CLASSES) {
+			expect(tocSource).toContain(cls);
 		}
 	});
 
-	it("is collapsed by default (no `open` attribute on <details>)", () => {
-		const detailsMatch = tocSource.match(/<details[^>]*>/);
+	it("does not claw the rail's width back out of the prose column", () => {
+		expect(tocSource).not.toContain("lg:-me-32");
+	});
+
+	it("caps its own height and scrolls, so a long TOC never outruns the viewport", () => {
+		expect(tocSource).toContain("lg:max-h-[calc(100vh-6rem)]");
+		expect(tocSource).toContain("lg:overflow-y-auto");
+	});
+
+	it("is collapsed by default in the markup, and only expands where the rail renders", () => {
+		const detailsMatch = tocSource.match(/<details[^>]*>/s);
 		expect(detailsMatch).not.toBeNull();
 		expect(detailsMatch?.[0]).not.toMatch(/\bopen\b/);
+		expect(tocSource).toContain('matchMedia("(min-width: 1024px)")');
 	});
 
 	it("still renders the heading list inside a details/summary disclosure", () => {

@@ -12,7 +12,10 @@ const { headings } = Astro.props;
 const toc = generateToc(headings);
 ---
 
-<details>
+<details
+	id="toc"
+	class="lg:sticky lg:top-12 lg:order-2 lg:max-h-[calc(100vh-6rem)] lg:basis-64 lg:overflow-y-auto"
+>
 	<summary class="title hover:marker:text-accent cursor-pointer text-lg">Table of Contents</summary>
 	<nav class="ms-4 lg:w-full">
 		<ol class="mt-4">
@@ -20,3 +23,11 @@ const toc = generateToc(headings);
 		</ol>
 	</nav>
 </details>
+
+<script is:inline>
+	// Collapsed by default where the TOC stacks above the article (narrow
+	// viewports), expanded where it renders as the side rail.
+	if (window.matchMedia("(min-width: 1024px)").matches) {
+		document.getElementById("toc").open = true;
+	}
+</script>
