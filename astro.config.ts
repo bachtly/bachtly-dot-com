@@ -23,6 +23,13 @@ export default defineConfig({
 	image: {
 		domains: ["webmention.io"],
 	},
+	// Old `/notes/*` routes were folded into the unified `/posts/` surface (#8);
+	// keep external links and RSS subscribers from hard-404ing.
+	redirects: {
+		"/notes": "/posts/",
+		"/notes/rss.xml": "/rss.xml",
+		"/notes/[...slug]": "/posts/[...slug]",
+	},
 	integrations: [
 		expressiveCode(expressiveCodeOptions),
 		icon(),
