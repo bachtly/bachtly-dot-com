@@ -47,6 +47,23 @@ describe("BlogPost layout", () => {
 		expect(baseLayoutSource).toContain("max-w-3xl");
 	});
 
+	it("justifies body text, and only body text", () => {
+		expect(blogPostSource).toContain("prose-p:text-justify");
+		expect(blogPostSource).toContain("prose-li:text-justify");
+		// A bare `text-justify` on the wrapper would catch headings, tables and
+		// code blocks too, which must stay ragged-right.
+		expect(blogPostSource).not.toMatch(/\s(?<!prose-\w{1,4}:)text-justify/);
+	});
+
+	it("hyphenates alongside justification, to keep word spacing even", () => {
+		// Justified text with no hyphenation stretches spaces to fill the line,
+		// which at this measure opens rivers of whitespace. `hyphens: auto`
+		// needs the document language, which Base.astro sets on <html>.
+		expect(blogPostSource).toContain("prose-p:hyphens-auto");
+		expect(blogPostSource).toContain("prose-li:hyphens-auto");
+		expect(baseLayoutSource).toContain("lang={siteConfig.lang}");
+	});
+
 	it("still guards TOC rendering for posts with no headings", () => {
 		expect(blogPostSource).toContain("{!!headings.length && <TOC headings={headings} />}");
 	});
