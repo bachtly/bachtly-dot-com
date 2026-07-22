@@ -23,7 +23,7 @@ export interface IssueEntry {
 	data: Record<string, unknown>;
 }
 
-const RESERVED_LABELS = new Set<string>(["Publish", "essay", "note"]);
+const RESERVED_LABELS = new Set<string>(["Publish"]);
 
 function extractDescription(body: string | null): string | undefined {
 	if (!body) return undefined;

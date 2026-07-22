@@ -48,7 +48,7 @@ describe("issueToEntry", () => {
 		expect(entry?.data.updatedDate).toBe("2026-03-05T12:00:00Z");
 	});
 
-	it("derives tags from residual labels, excluding gate and tier labels", () => {
+	it("derives tags from residual labels, excluding only the Publish gate label", () => {
 		const entry = issueToEntry(
 			makeIssue({
 				labels: [
@@ -59,7 +59,7 @@ describe("issueToEntry", () => {
 				],
 			}),
 		);
-		expect(entry?.data.tags).toEqual(["typescript", "debugging"]);
+		expect(entry?.data.tags).toEqual(["essay", "typescript", "debugging"]);
 	});
 
 	it("uses a leading '> tl;dr' blockquote as the description", () => {
