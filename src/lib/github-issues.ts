@@ -20,7 +20,11 @@ export interface IssueEntry {
 	data: Record<string, unknown>;
 }
 
-const RESERVED_LABELS = new Set<string>(["Publish"]);
+// `essay`/`note` are legacy tier-gate labels: the loader no longer branches on
+// them (any `Publish`-labelled issue is the single article type), but they may
+// still exist on live issues until a follow-up cleans them up, so they stay
+// excluded from the derived `tags` array rather than leaking in as topics.
+const RESERVED_LABELS = new Set<string>(["Publish", "essay", "note"]);
 
 function extractDescription(body: string | null): string | undefined {
 	if (!body) return undefined;

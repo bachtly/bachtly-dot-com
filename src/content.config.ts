@@ -54,7 +54,7 @@ function githubIssuesLoader(): Loader {
 				store.set({ id: entry.id, data, rendered });
 				count++;
 			}
-			logger.info(`Loaded ${count} post(s) from GitHub Issues (${REPO})`);
+			logger.info(`Loaded ${count} entr${count === 1 ? "y" : "ies"} from GitHub Issues (${REPO})`);
 		},
 	};
 }
@@ -65,10 +65,9 @@ const baseSchema = z.object({
 	title: titleSchema,
 });
 
-// Merged schema for the single, unified article type: every field that used
-// to be `note`-only-optional (i.e. not present on the `note` schema at all,
-// or optional there) stays optional/defaulted here, so a lightweight
-// note-like issue is just as easy to publish as a fully-dressed post.
+// Schema for the single, unified article type: all fields except `title` and
+// `publishDate` are optional/defaulted, so a lightweight issue is just as easy
+// to publish as a fully-dressed one.
 const post = defineCollection({
 	loader: githubIssuesLoader(),
 	schema: ({ image }) =>
