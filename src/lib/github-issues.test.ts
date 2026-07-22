@@ -14,17 +14,25 @@ function makeIssue(overrides: Partial<GitHubIssue> = {}): GitHubIssue {
 }
 
 describe("issueToEntry", () => {
-	it("routes a Publish+essay issue to the post tier", () => {
+	it("includes a Publish+essay issue as the single article type", () => {
 		const entry = issueToEntry(makeIssue());
-		expect(entry?.tier).toBe("post");
+		expect(entry).not.toBeNull();
 		expect(entry?.data.title).toBe("A post");
 	});
 
-	it("routes a Publish+note issue to the note tier", () => {
-		const entry = issueToEntry(
-			makeIssue({ labels: [{ name: "Publish" }, { name: "note" }] }),
-		);
-		expect(entry?.tier).toBe("note");
+	it("includes a Publish+note issue as the same single article type", () => {
+		const entry = issueToEntry(makeIssue({ labels: [{ name: "Publish" }, { name: "note" }] }));
+		expect(entry).not.toBeNull();
+	});
+
+	it("includes a Publish-labelled issue that has neither the essay nor the note label", () => {
+		const entry = issueToEntry(makeIssue({ labels: [{ name: "Publish" }] }));
+		expect(entry).not.toBeNull();
+	});
+
+	it("has no tier field: there is no distinction between essay- and note-labelled issues", () => {
+		const entry = issueToEntry(makeIssue());
+		expect(entry).not.toHaveProperty("tier");
 	});
 
 	it("excludes drafts: an issue without the Publish label is null", () => {
@@ -43,7 +51,7 @@ describe("issueToEntry", () => {
 		expect(entry?.data.updatedDate).toBe("2026-03-05T12:00:00Z");
 	});
 
-	it("derives tags from residual labels, excluding gate and tier labels", () => {
+	it("derives tags from residual labels, excluding the Publish gate label and the legacy essay/note labels", () => {
 		const entry = issueToEntry(
 			makeIssue({
 				labels: [
@@ -55,6 +63,15 @@ describe("issueToEntry", () => {
 			}),
 		);
 		expect(entry?.data.tags).toEqual(["typescript", "debugging"]);
+	});
+
+	it("also excludes the legacy note label from tags", () => {
+		const entry = issueToEntry(
+			makeIssue({
+				labels: [{ name: "Publish" }, { name: "note" }, { name: "typescript" }],
+			}),
+		);
+		expect(entry?.data.tags).toEqual(["typescript"]);
 	});
 
 	it("uses a leading '> tl;dr' blockquote as the description", () => {
@@ -76,9 +93,7 @@ describe("issueToEntry", () => {
 	});
 
 	it("builds a slug id from the issue number and a slugified title", () => {
-		const entry = issueToEntry(
-			makeIssue({ number: 7, title: "Hello, World! & Café" }),
-		);
+		const entry = issueToEntry(makeIssue({ number: 7, title: "Hello, World! & Café" }));
 		expect(entry?.id).toBe("7-hello-world-cafe");
 	});
 });
