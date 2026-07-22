@@ -15,10 +15,7 @@ export interface GitHubIssue {
 	labels: GitHubLabel[];
 }
 
-export type Tier = "post" | "note";
-
 export interface IssueEntry {
-	tier: Tier;
 	id: string;
 	data: Record<string, unknown>;
 }
@@ -28,7 +25,7 @@ const RESERVED_LABELS = new Set<string>(["Publish"]);
 function extractDescription(body: string | null): string | undefined {
 	if (!body) return undefined;
 	const tldr = body.match(/^\s*>\s*tl;dr[:\-—]?\s*(.+?)\s*$/im);
-	if (tldr) return tldr[1].trim();
+	if (tldr?.[1]) return tldr[1].trim();
 	return body
 		.split("\n")
 		.map((line) => line.trim())
@@ -47,10 +44,8 @@ function slugify(title: string): string {
 export function issueToEntry(issue: GitHubIssue): IssueEntry | null {
 	const labels = issue.labels.map((l) => l.name);
 	if (!labels.includes("Publish")) return null;
-	const tier: Tier = labels.includes("note") ? "note" : "post";
 	const tags = labels.filter((name) => !RESERVED_LABELS.has(name));
 	return {
-		tier,
 		id: `${issue.number}-${slugify(issue.title)}`,
 		data: {
 			title: issue.title,

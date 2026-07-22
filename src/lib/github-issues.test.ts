@@ -14,22 +14,27 @@ function makeIssue(overrides: Partial<GitHubIssue> = {}): GitHubIssue {
 }
 
 describe("issueToEntry", () => {
-	it("routes a Publish+essay issue to the post tier", () => {
+	it("includes a Publish+essay issue as the single article type", () => {
 		const entry = issueToEntry(makeIssue());
-		expect(entry?.tier).toBe("post");
+		expect(entry).not.toBeNull();
 		expect(entry?.data.title).toBe("A post");
 	});
 
-	it("routes a Publish+note issue to the note tier", () => {
+	it("includes a Publish+note issue as the same single article type", () => {
 		const entry = issueToEntry(
 			makeIssue({ labels: [{ name: "Publish" }, { name: "note" }] }),
 		);
-		expect(entry?.tier).toBe("note");
+		expect(entry).not.toBeNull();
 	});
 
 	it("includes a Publish-labelled issue that has neither the essay nor the note label", () => {
 		const entry = issueToEntry(makeIssue({ labels: [{ name: "Publish" }] }));
 		expect(entry).not.toBeNull();
+	});
+
+	it("has no tier field: there is no distinction between essay- and note-labelled issues", () => {
+		const entry = issueToEntry(makeIssue());
+		expect(entry).not.toHaveProperty("tier");
 	});
 
 	it("excludes drafts: an issue without the Publish label is null", () => {
