@@ -7,49 +7,42 @@ const dirname = path.dirname(fileURLToPath(import.meta.url));
 const blogPostSource = readFileSync(path.join(dirname, "BlogPost.astro"), "utf-8");
 const globalCssSource = readFileSync(path.join(dirname, "..", "styles", "global.css"), "utf-8");
 
-// The TOC sits beside the article as a wide-screen side rail again. What
-// changed is where the rail's width comes from: the row now breaks out of
-// the page's `max-w-3xl` container to the right, so the rail hangs in the
-// empty gutter instead of being subtracted from the prose column.
-const ROW_LAYOUT_CLASSES = ["lg:flex-row", "lg:items-start", "lg:justify-between"];
+// Side-rail treatment that put the TOC beside the article at `lg`, in a flex
+// row with the TOC and prose column split apart. The article always stacks
+// under the TOC instead, at every width.
+const SIDE_RAIL_CLASSES = ["lg:flex-row", "lg:items-start", "lg:justify-between"];
 
-// Right-gutter breakout, sized so it can never exceed the gutter it hangs
-// in: at lg (1024px viewport) the gutter is (1024 - 768) / 2 = 128px and the
-// breakout is 96px; at xl (1280px) it is 224px into 256px. It stops at xl
-// because that already gives the prose column its full 72ch measure —
-// hanging the rail further out past that would only reopen the gap.
-const BREAKOUT_CLASSES = ["lg:-me-24", "xl:-me-56"];
+// Negative margins that hung the rail in the page's right gutter. With no
+// rail there is nothing to hang, and the article keeps the full container.
+const GUTTER_BREAKOUT_CLASSES = ["lg:-me-24", "xl:-me-56", "2xl:-me-80"];
 
 describe("BlogPost layout", () => {
-	it("lays the TOC out beside the article at lg", () => {
-		for (const cls of ROW_LAYOUT_CLASSES) {
-			expect(blogPostSource).toContain(cls);
+	it("does not lay the TOC out beside the article (no side rail)", () => {
+		for (const cls of SIDE_RAIL_CLASSES) {
+			expect(blogPostSource).not.toContain(cls);
 		}
 	});
 
-	it("keeps the TOC and article stacked vertically below lg", () => {
+	it("keeps the TOC and article stacked vertically", () => {
 		expect(blogPostSource).toContain("flex flex-col");
 	});
 
-	it("hangs the rail in the page's right gutter rather than in the prose column", () => {
-		for (const cls of BREAKOUT_CLASSES) {
-			expect(blogPostSource).toContain(cls);
+	it("does not break the article out of the page container", () => {
+		for (const cls of GUTTER_BREAKOUT_CLASSES) {
+			expect(blogPostSource).not.toContain(cls);
 		}
 	});
 
-	it("keeps code blocks aligned with the prose measure (no left-gutter breakout)", () => {
+	it("keeps code blocks aligned with the prose measure (no gutter breakout)", () => {
 		expect(globalCssSource).not.toContain(".prose .expressive-code");
 	});
 
-	it("holds the prose column to a readable measure, wider than the 65ch default", () => {
-		// Tailwind Typography's own cap is 65ch, tighter than the row now
-		// affords; unbounded, the column ran past 85ch on a wide screen. 72ch
-		// sits inside the conventional 45-75 character line-length range.
+	it("widens the prose column past Tailwind Typography's 65ch default", () => {
+		// With no rail taking a bite out of it, the article has the whole
+		// container to work with, but `.prose` still caps itself at 65ch
+		// (~546px in this mono font at prose-sm's 14px). 72ch is wider while
+		// staying inside the conventional 45-75 character line-length range.
 		expect(blogPostSource).toContain("max-w-[72ch]");
-		expect(blogPostSource).toContain("grow");
-		// Flex items default to min-width:auto, which lets a wide code block
-		// push the column past its share of the row.
-		expect(blogPostSource).toContain("min-w-0");
 	});
 
 	it("still guards TOC rendering for posts with no headings", () => {

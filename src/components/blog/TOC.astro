@@ -18,14 +18,11 @@ const toc = generateToc(headings, { minHeadingLevel: 1 });
 	// A post whose headings all fall outside the TOC's depth range would
 	// otherwise render an empty disclosure box.
 	toc.length > 0 && (
-		<details
-			id="toc"
-			class="lg:sticky lg:top-12 lg:order-2 lg:max-h-[calc(100vh-6rem)] lg:basis-64 lg:overflow-y-auto"
-		>
+		<details>
 			<summary class="title hover:marker:text-accent cursor-pointer text-lg">
 				Table of Contents
 			</summary>
-			<nav class="ms-4 lg:w-full">
+			<nav class="ms-4">
 				<ol class="mt-4">
 					{toc.map((heading) => (
 						<TOCHeading heading={heading} />
@@ -35,12 +32,3 @@ const toc = generateToc(headings, { minHeadingLevel: 1 });
 		</details>
 	)
 }
-
-<script is:inline>
-	// Collapsed by default where the TOC stacks above the article (narrow
-	// viewports), expanded where it renders as the side rail.
-	if (window.matchMedia("(min-width: 1024px)").matches) {
-		const toc = document.getElementById("toc");
-		if (toc) toc.open = true;
-	}
-</script>

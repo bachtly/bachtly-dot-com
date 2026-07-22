@@ -16,33 +16,30 @@ const ALL_H1_HEADINGS = [
 	{ depth: 1, slug: "lets-pick-one-randomly", text: "Let's pick one randomly" },
 ];
 
-// The sticky side rail is back, but it no longer pays for itself out of the
-// article's width: `lg:-me-32` (which clawed the rail's width back out of the
-// prose column) is gone, replaced by a negative margin on the row in
-// BlogPost.astro that hangs the rail in the page's own right gutter instead.
-const SIDEBAR_CLASSES = ["lg:sticky", "lg:order-2", "lg:basis-64"];
+// Sidebar treatment that turned the TOC into a sticky rail floating beside
+// the article at `lg`. Dropped so the TOC always renders above the article
+// body instead of eating horizontal width next to it.
+const SIDEBAR_CLASSES = [
+	"lg:sticky",
+	"lg:order-2",
+	"lg:-me-32",
+	"lg:basis-64",
+	"lg:max-h-[calc(100vh-6rem)]",
+	"lg:overflow-y-auto",
+];
 
 describe("TOC", () => {
-	it("renders as a sticky side rail at lg", () => {
+	it("does not apply the sticky sidebar treatment at lg", () => {
 		for (const cls of SIDEBAR_CLASSES) {
-			expect(tocSource).toContain(cls);
+			expect(tocSource).not.toContain(cls);
 		}
 	});
 
-	it("does not claw the rail's width back out of the prose column", () => {
-		expect(tocSource).not.toContain("lg:-me-32");
-	});
-
-	it("caps its own height and scrolls, so a long TOC never outruns the viewport", () => {
-		expect(tocSource).toContain("lg:max-h-[calc(100vh-6rem)]");
-		expect(tocSource).toContain("lg:overflow-y-auto");
-	});
-
-	it("is collapsed by default in the markup, and only expands where the rail renders", () => {
+	it("is collapsed by default, with no script reopening it at any width", () => {
 		const detailsMatch = tocSource.match(/<details[^>]*>/s);
 		expect(detailsMatch).not.toBeNull();
 		expect(detailsMatch?.[0]).not.toMatch(/\bopen\b/);
-		expect(tocSource).toContain('matchMedia("(min-width: 1024px)")');
+		expect(tocSource).not.toContain("matchMedia");
 	});
 
 	it("lists a post whose sections are all h1 instead of rendering empty", () => {
