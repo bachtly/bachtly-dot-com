@@ -75,3 +75,23 @@ describe("BlogPost article body heading sizing", () => {
 		expect(globalCssSource).toContain(".title {\n\t\t@apply text-accent-2 text-2xl font-semibold;");
 	});
 });
+
+describe("BlogPost heading '#' marker spacing", () => {
+	it("pulls the marker further left of the heading text than before, opening a gap", () => {
+		// The marker is an absolutely-positioned `::before` pulled left of the
+		// heading text via a negative inline-start margin — the heading text
+		// itself never moves, only the marker's own offset does. -ms-4 (-1rem)
+		// left next to no visible gap once the "#" glyph's own width is
+		// subtracted; -ms-6 (-1.5rem) leaves headroom as a visible gap.
+		expect(blogPostSource).not.toContain("prose-headings:before:-ms-4");
+		expect(blogPostSource).toContain("prose-headings:before:-ms-6");
+	});
+
+	it("changes only the offset — every other marker behavior is untouched", () => {
+		expect(blogPostSource).toContain("prose-headings:before:absolute");
+		expect(blogPostSource).toContain("prose-headings:before:text-muted");
+		expect(blogPostSource).toContain("prose-headings:hover:before:text-accent");
+		expect(blogPostSource).toContain("sm:prose-headings:before:content-['#']");
+		expect(blogPostSource).toContain("sm:prose-th:before:content-none");
+	});
+});
