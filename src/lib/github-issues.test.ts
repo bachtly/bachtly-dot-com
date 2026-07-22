@@ -21,9 +21,7 @@ describe("issueToEntry", () => {
 	});
 
 	it("includes a Publish+note issue as the same single article type", () => {
-		const entry = issueToEntry(
-			makeIssue({ labels: [{ name: "Publish" }, { name: "note" }] }),
-		);
+		const entry = issueToEntry(makeIssue({ labels: [{ name: "Publish" }, { name: "note" }] }));
 		expect(entry).not.toBeNull();
 	});
 
@@ -86,9 +84,7 @@ describe("issueToEntry", () => {
 	});
 
 	it("builds a slug id from the issue number and a slugified title", () => {
-		const entry = issueToEntry(
-			makeIssue({ number: 7, title: "Hello, World! & Café" }),
-		);
+		const entry = issueToEntry(makeIssue({ number: 7, title: "Hello, World! & Café" }));
 		expect(entry?.id).toBe("7-hello-world-cafe");
 	});
 });

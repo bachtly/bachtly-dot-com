@@ -1,5 +1,5 @@
 import { defineCollection } from "astro:content";
-import { type Loader, glob } from "astro/loaders";
+import { glob, type Loader } from "astro/loaders";
 import { z } from "astro/zod";
 import { type GitHubIssue, issueToEntry } from "./lib/github-issues";
 
