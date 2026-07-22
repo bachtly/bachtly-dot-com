@@ -15,8 +15,9 @@ const ROW_LAYOUT_CLASSES = ["lg:flex-row", "lg:items-start", "lg:justify-between
 
 // Right-gutter breakout, sized so it can never exceed the gutter it hangs
 // in: at lg (1024px viewport) the gutter is (1024 - 768) / 2 = 128px and the
-// breakout is 96px; at xl (1280px) the gutter is 256px and it is 224px.
-const BREAKOUT_CLASSES = ["lg:-me-24", "xl:-me-56"];
+// breakout is 96px; at xl (1280px) it is 224px into 256px; at 2xl (1536px)
+// it is 320px into 384px.
+const BREAKOUT_CLASSES = ["lg:-me-24", "xl:-me-56", "2xl:-me-80"];
 
 describe("BlogPost layout", () => {
 	it("lays the TOC out beside the article at lg", () => {
@@ -37,6 +38,17 @@ describe("BlogPost layout", () => {
 
 	it("keeps code blocks aligned with the prose measure (no left-gutter breakout)", () => {
 		expect(globalCssSource).not.toContain(".prose .expressive-code");
+	});
+
+	it("lets the prose column use the width the breakout buys it", () => {
+		// Tailwind Typography caps `.prose` at 65ch, which in this mono font at
+		// prose-sm's 14px lands around 546px — below the row width, so without
+		// max-w-none the extra room goes to the gap instead of the text.
+		expect(blogPostSource).toContain("max-w-none");
+		expect(blogPostSource).toContain("grow");
+		// Flex items default to min-width:auto, which lets a wide code block
+		// push the column past its share of the row.
+		expect(blogPostSource).toContain("min-w-0");
 	});
 
 	it("still guards TOC rendering for posts with no headings", () => {
