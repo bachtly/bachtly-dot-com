@@ -47,21 +47,21 @@ describe("BlogPost layout", () => {
 		expect(baseLayoutSource).toContain("max-w-3xl");
 	});
 
-	it("justifies body text, and only body text", () => {
-		expect(blogPostSource).toContain("prose-p:text-justify");
-		expect(blogPostSource).toContain("prose-li:text-justify");
-		// A bare `text-justify` on the wrapper would catch headings, tables and
-		// code blocks too, which must stay ragged-right.
-		expect(blogPostSource).not.toMatch(/\s(?<!prose-\w{1,4}:)text-justify/);
+	it("leaves body text ragged-right rather than justifying it", () => {
+		// Justification stretches word spacing to fill each line, which at this
+		// measure in a mono font opens rivers of whitespace. Hyphenation was
+		// only ever there to hide that, so both go together.
+		// Split so Tailwind's source scanner doesn't see a class name here and
+		// emit the very utility this test asserts is unused.
+		expect(blogPostSource).not.toContain(`text-${"justify"}`);
+		expect(blogPostSource).not.toContain(`hyphens-${"auto"}`);
 	});
 
-	it("hyphenates alongside justification, to keep word spacing even", () => {
-		// Justified text with no hyphenation stretches spaces to fill the line,
-		// which at this measure opens rivers of whitespace. `hyphens: auto`
-		// needs the document language, which Base.astro sets on <html>.
-		expect(blogPostSource).toContain("prose-p:hyphens-auto");
-		expect(blogPostSource).toContain("prose-li:hyphens-auto");
-		expect(baseLayoutSource).toContain("lang={siteConfig.lang}");
+	it("evens out line lengths without touching alignment", () => {
+		// `text-wrap: pretty` keeps the last line of a paragraph from being a
+		// lone short word; `balance` evens a heading across its lines.
+		expect(blogPostSource).toContain("text-pretty");
+		expect(blogPostSource).toContain("prose-headings:text-balance");
 	});
 
 	it("still guards TOC rendering for posts with no headings", () => {
