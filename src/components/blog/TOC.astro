@@ -9,14 +9,26 @@ interface Props {
 
 const { headings } = Astro.props;
 
-const toc = generateToc(headings);
+// Posts come from GitHub Issue bodies, where an author's `#` is the natural
+// top level for a section, so in-body h1s have to count as TOC entries.
+const toc = generateToc(headings, { minHeadingLevel: 1 });
 ---
 
-<details open class="lg:sticky lg:top-12 lg:order-2 lg:-me-32 lg:basis-64">
-	<summary class="title hover:marker:text-accent cursor-pointer text-lg">Table of Contents</summary>
-	<nav class="ms-4 lg:w-full">
-		<ol class="mt-4">
-			{toc.map((heading) => <TOCHeading heading={heading} />)}
-		</ol>
-	</nav>
-</details>
+{
+	// A post whose headings all fall outside the TOC's depth range would
+	// otherwise render an empty disclosure box.
+	toc.length > 0 && (
+		<details>
+			<summary class="title hover:marker:text-accent cursor-pointer text-lg">
+				Table of Contents
+			</summary>
+			<nav class="ms-4">
+				<ol class="mt-4">
+					{toc.map((heading) => (
+						<TOCHeading heading={heading} />
+					))}
+				</ol>
+			</nav>
+		</details>
+	)
+}
