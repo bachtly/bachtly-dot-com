@@ -27,6 +27,11 @@ describe("issueToEntry", () => {
 		expect(entry?.tier).toBe("note");
 	});
 
+	it("includes a Publish-labelled issue that has neither the essay nor the note label", () => {
+		const entry = issueToEntry(makeIssue({ labels: [{ name: "Publish" }] }));
+		expect(entry).not.toBeNull();
+	});
+
 	it("excludes drafts: an issue without the Publish label is null", () => {
 		const entry = issueToEntry(makeIssue({ labels: [{ name: "essay" }] }));
 		expect(entry).toBeNull();

@@ -47,12 +47,7 @@ function slugify(title: string): string {
 export function issueToEntry(issue: GitHubIssue): IssueEntry | null {
 	const labels = issue.labels.map((l) => l.name);
 	if (!labels.includes("Publish")) return null;
-	const tier: Tier | null = labels.includes("essay")
-		? "post"
-		: labels.includes("note")
-			? "note"
-			: null;
-	if (!tier) return null;
+	const tier: Tier = labels.includes("note") ? "note" : "post";
 	const tags = labels.filter((name) => !RESERVED_LABELS.has(name));
 	return {
 		tier,
