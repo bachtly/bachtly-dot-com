@@ -3,23 +3,28 @@ import type { TocItem } from "@/utils/generateToc";
 
 interface Props {
 	heading: TocItem;
+	/** Nesting level within the TOC, not the heading's own depth: a post
+	 * written with `#` sections and one written with `##` sections should
+	 * both render their top-level entries the same way. */
+	level?: number;
 }
 
 const {
-	heading: { children, depth, slug, text },
+	heading: { children, slug, text },
+	level = 1,
 } = Astro.props;
 ---
 
-<li class={`${depth > 2 ? "ms-2" : ""}`}>
+<li class={`${level > 1 ? "ms-2" : ""}`}>
 	<a
-		class={`line-clamp-2 hover:text-accent ${depth <= 2 ? "mt-3" : "mt-2 text-xs"}`}
+		class={`line-clamp-2 hover:text-accent ${level === 1 ? "mt-3" : "mt-2 text-xs"}`}
 		href={`#${slug}`}><span aria-hidden="true" class="me-0.5">#</span>{text}</a
 	>
 	{
 		!!children.length && (
 			<ol>
 				{children.map((subheading) => (
-					<Astro.self heading={subheading} />
+					<Astro.self heading={subheading} level={level + 1} />
 				))}
 			</ol>
 		)
