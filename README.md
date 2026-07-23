@@ -16,11 +16,8 @@ Astro Cactus is a simple opinionated starter built with [Astro](https://astro.bu
 5. [Commands](#commands)
 6. [Configure](#configure)
 7. [Updating](#updating)
-8. [Adding posts, notes, and tags](#adding-posts-notes-and-tags)
-   - [Post Frontmatter](#post-frontmatter)
-   - [Note Frontmatter](#note-frontmatter)
+8. [Adding articles and tags](#adding-articles-and-tags)
    - [Tag Frontmatter](#tag-frontmatter)
-   - [Frontmatter Snippets](#frontmatter-snippets)
 9. [Pagefind search](#pagefind-search)
 10. [Analytics](#analytics)
 11. [Deploy](#deploy)
@@ -33,7 +30,7 @@ Astro Cactus is a simple opinionated starter built with [Astro](https://astro.bu
 - Accessible, semantic HTML markup
 - Responsive & SEO-friendly
 - Dark & Light mode
-- MD & [MDX](https://docs.astro.build/en/guides/markdown-content/#mdx-only-features) posts & notes
+- MD & [MDX](https://docs.astro.build/en/guides/markdown-content/#mdx-only-features)-flavored posts, authored as GitHub Issues
   - Includes [Admonitions](https://astro-cactus.chriswilliams.dev/posts/markdown-elements/admonitions/)
 - [Satori](https://github.com/vercel/satori) for creating open graph png images
 - [Automatic RSS feeds](https://docs.astro.build/en/guides/rss)
@@ -95,7 +92,7 @@ Replace pnpm with your choice of npm / yarn
   - social-card.png - used as the default og:image
 - Modify file `src/styles/global.css` with your own light and dark styles, and customise [Tailwind's theme settings](https://tailwindcss.com/docs/theme#customizing-your-theme).
 - Edit social links in `src/components/SocialList.astro` to add/replace your media profile. Icons can be found @ [icones.js.org](https://icones.js.org/), per [Astro Icon's instructions](https://www.astroicon.dev/guides/customization/#find-an-icon-set).
-- Create/edit posts & notes for your blog within `src/content/post/` & `src/content/note/` with .md/mdx file(s). See [below](#adding-posts-notes-and-tags) for more details.
+- Publish articles for your blog by opening a `Publish`-labelled GitHub issue on this repo. See [below](#adding-articles-and-tags) for more details.
   - Read [this post](http://astro-cactus.chriswilliams.dev/posts/webmentions/) for adding webmentions to your site.
   - Add any custom Tag pages for related blog posts in `/src/content/tag/`, ensuring that the file name is the same as the tag.
 - OG Image:
@@ -110,39 +107,23 @@ If you've forked the template, you can [sync the fork](https://docs.github.com/e
 
 If you have a template repository, you can add this template as a remote, [as discussed here](https://stackoverflow.com/questions/56577184/github-pull-changes-from-a-template-repository).
 
-## Adding posts, notes, and tags
+## Adding articles and tags
 
-This theme uses [Content Collections](https://docs.astro.build/en/guides/content-collections/) to organise local Markdown and MDX files, as well as type-checking frontmatter with a schema -> `src/content.config.ts`.
+Articles aren't authored as local Markdown files. This site uses a GitHub-Issues-as-CMS [Content Layer loader](https://docs.astro.build/en/guides/content-collections/#building-a-custom-loader) (`src/content.config.ts`, `src/lib/github-issues.ts`): any issue on this repository labelled `Publish` becomes a live article at build time. There is a single article type, no separate post/note tiers.
 
-Adding a post/note/tag is as simple as adding your .md(x) files to either `src/content/post`, `src/content/note`, and `src/content/tag` folders, the filename of which will be used as the slug/url.
+To publish an article:
 
-The Tag collection allows you to override the content for generated tag pages. For example the template includes `src/content/tag/test.md` which overrides the content shown in `your-domain.com/tags/test`.
+- Open a GitHub issue on this repo. The issue title becomes the article title (max 60 chars, enforced by the schema in `src/content.config.ts`).
+- Write the article body as the issue body; it's rendered as Markdown/MDX-flavored content.
+- Add the `Publish` label to make it live.
+- Any other label on the issue becomes a tag, shown on `your-domain.com/posts` & `your-domain.com/tags`, and generates the page(s) `your-domain.com/tags/[yourTag]`.
+- The description is taken from a `> tl;dr: ...` line in the body if present, otherwise the first non-empty line of the body.
+- `publishDate`/`updatedDate` come from the issue's created/updated timestamps.
+
+The Tag collection still uses local Markdown files, to let you override the content shown on generated tag pages. For example the repo includes `src/content/tag/test.md` which overrides the content shown in `your-domain.com/tags/test`.
 
 > **Note**
-> For a tag page to work, the file name (`src/content/tag/*`) must also be in a post's [tags frontmatter.](#post-frontmatter)
-
-The posts/notes/tags included with this template are there as an example of how to structure your frontmatter. Additionally, the [Astro docs](https://docs.astro.build/en/guides/markdown-content/) has a detailed section on markdown pages.
-
-### Post Frontmatter
-
-| Property (\* required) | Description                                                                                                                                                                                                                                                                                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| title \*               | Self explanatory. Used as the text link to the post, the h1 on the posts' page, and the pages title property. Has a max length of 60 chars, set in `src/content/config.ts`                                                                                                                                   |
-| description \*         | Similar to above, used as the seo description property. Has a min length of 50 and a max length of 160 chars, set in the post schema.                                                                                                                                                                        |
-| publishDate \*         | Again pretty simple. To change the date format/locale, currently **en-GB**, update the date option in `src/site.config.ts`. Note you can also pass additional options to the component `<FormattedDate>` if required.                                                                                        |
-| updatedDate            | This is an optional date representing when a post has been updated, in the same format as the publishDate.                                                                                                                                                                                                   |
-| tags                   | Tags are optional with any created post. Any new tag(s) will be shown in `your-domain.com/posts` & `your-domain.com/tags`, and generate the page(s) `your-domain.com/tags/[yourTag]`                                                                                                                         |
-| coverImage             | This is an optional object that will add a cover image to the top of a post. Include both a `src`: "_path-to-image_" and `alt`: "_image alt_". You can view an example in `src/content/post/testing/cover-image/index.md`.                                                                                                 |
-| ogImage                | This is an optional property. An OG Image will be generated automatically for every post where this property **isn't** provided. If you would like to create your own for a specific post, include this property and a link to your image, the theme will then skip automatically generating one.            |
-| draft                  | This is an optional property as it is set to false by default in the schema. By adding true, the post will be filtered out of the production build in a number of places, inc. getAllPosts() calls, og-images, rss feeds, and generated page[s]. You can view an example in `src/content/post/testing/draft-post.md` |
-
-### Note Frontmatter
-
-| Property (\* required) | Description                                                                                                           |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| title \*               | Used as the link text to the note, the pages title property, and the h1 of said note page. Has a max length 60 chars. |
-| description            | Optional. Used for the head meta description property.                                                                |
-| publishDate \*         | ISO 8601 format with offsets allowed.                                                                                 |
+> For a tag page to work, the file name (`src/content/tag/*`) must also match one of the labels/tags on a published issue.
 
 ### Tag Frontmatter
 
@@ -151,15 +132,11 @@ The posts/notes/tags included with this template are there as an example of how 
 | title                  | Optional. Used as the h1 on the tags' page, and the pages title property. Has a max length of 60 chars. |
 | description            | Optional. Used for the head meta description and the first paragraph under the h1.                      |
 
-### Frontmatter snippets
-
-Astro Cactus includes a helpful VSCode snippet which creates a frontmatter 'stub' for posts and note's, found here -> `.vscode/post.code-snippets`. Start typing the word `frontmatter` on your newly created .md(x) file to trigger it. Visual Studio Code snippets appear in IntelliSense via (⌃Space) on mac, (Ctrl+Space) on windows.
-
 ## Pagefind search
 
-This integration brings a static search feature for searching blog posts and notes. In its current form, pagefind only works once the site has been built. This theme adds a postbuild script that should be run after Astro has built the site. You can preview locally by running both build && postbuild.
+This integration brings a static search feature for searching blog posts. In its current form, pagefind only works once the site has been built. This theme adds a postbuild script that should be run after Astro has built the site. You can preview locally by running both build && postbuild.
 
-Search results only includes pages from posts and notes. If you would like to include other/all your pages, remove/re-locate the attribute `data-pagefind-body` to the article tag found in `src/layouts/BlogPost.astro` and `src/components/note/Note.astro`.
+Search results only include pages from posts. If you would like to include other/all your pages, remove/re-locate the attribute `data-pagefind-body` to the article tag found in `src/layouts/BlogPost.astro`.
 
 It also allows you to filter posts by tags added in the frontmatter of blog posts. If you would rather remove this, remove the data attribute `data-pagefind-filter="tag"` from the link in `src/components/blog/Masthead.astro`.
 

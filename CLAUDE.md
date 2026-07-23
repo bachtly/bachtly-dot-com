@@ -2,7 +2,7 @@
 
 Guidance for AI assistants working in this repo.
 
-## Writing style (prose in pages, posts, notes, meta text)
+## Writing style (prose in pages, posts, meta text)
 
 Write plainly, like a person. Strip out AI writing tells from any user-facing
 text passage before finishing:
