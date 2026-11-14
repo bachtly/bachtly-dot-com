@@ -15,6 +15,14 @@ concurrency:
 
 jobs:
   trigger-deploy:
+    # Anyone can open or edit an issue, so only rebuild for issues the owner or a
+    # collaborator wrote, or for changes the owner made (e.g. adding `Publish`).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.sender.login == github.repository_owner ||
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
+    # The hook lives in an environment only `main` can use.
+    environment: site-rebuild
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Vercel deploy hook
